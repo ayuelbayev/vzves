@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Взвесь</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{
+  --bg: var(--tg-theme-secondary-bg-color, #f2f2f6);
+  --card: var(--tg-theme-section-bg-color, var(--tg-theme-bg-color, #ffffff));
+  --text: var(--tg-theme-text-color, #141414);
+  --hint: var(--tg-theme-hint-color, #8a8a8e);
+  --accent: var(--tg-theme-button-color, #2f7cf6);
+  --accent-text: var(--tg-theme-button-text-color, #ffffff);
+  --danger: var(--tg-theme-destructive-text-color, #e5484d);
+  --line: rgba(127,127,127,.18);
+  --soft: rgba(127,127,127,.10);
+  --gold: #f2b632;
+  --radius: 16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not(.tg){ --bg:#0f0f10; --card:#1c1c1e; --text:#f2f2f2; --hint:#8e8e93; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-tap-highlight-color:transparent}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+h1{font-size:26px;margin:8px 0 2px;letter-spacing:-.02em}
+h2{font-size:15px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:.04em;margin:22px 4px 8px}
+.sub{color:var(--hint);margin:0 0 16px}
+.card{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.hint{color:var(--hint);font-size:14px}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+input[type=text]{width:100%;font:inherit;color:var(--text);background:var(--soft);border:0;border-radius:12px;padding:11px 12px;outline:none}
+input[type=text]:focus{box-shadow:0 0 0 2px var(--accent) inset}
+input.title{font-size:18px;font-weight:600;background:transparent;padding:4px 0}
+input.title:focus{box-shadow:none}
+.btn{display:block;width:100%;font:inherit;font-weight:600;border:0;border-radius:14px;padding:14px;cursor:pointer;
+  background:var(--accent);color:var(--accent-text);margin-top:12px}
+.btn.ghost{background:var(--card);color:var(--accent)}
+.btn.danger{background:transparent;color:var(--danger);font-weight:500}
+.btn:active{opacity:.75}
+.btn[disabled]{opacity:.4}
+.icon{border:0;background:var(--soft);color:var(--hint);width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;flex:none}
+.add{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;padding:10px 2px;cursor:pointer}
+.list-item{display:block;width:100%;text-align:left;border:0;font:inherit;color:inherit;cursor:pointer}
+.list-item b{display:block;font-size:17px}
+.weights{display:flex;gap:4px;margin-top:8px}
+.weights button{flex:1;border:0;border-radius:8px;padding:6px 0;font:inherit;font-size:13px;cursor:pointer;background:var(--soft);color:var(--hint)}
+.weights button.on{background:var(--accent);color:var(--accent-text)}
+.crit{padding:10px 0;border-top:1px solid var(--line)}
+.crit:first-child{border-top:0;padding-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer;background:var(--soft);color:var(--text)}
+.slider{margin:10px 0 2px}
+.slider .row{justify-content:space-between;font-size:15px}
+.slider .val{font-weight:700;min-width:24px;text-align:right;color:var(--accent)}
+input[type=range]{width:100%;accent-color:var(--accent);margin:6px 0 0}
+.badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--hint);vertical-align:middle}
+.res{position:relative;overflow:hidden}
+.res .bar{height:8px;border-radius:99px;background:var(--soft);margin-top:10px;overflow:hidden}
+.res .bar i{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .6s ease}
+.res.win{box-shadow:0 0 0 2px var(--accent) inset}
+.res .pct{font-size:22px;font-weight:700}
+.note{background:var(--soft);border-radius:12px;padding:12px;margin-top:10px;font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid2 .btn{margin-top:0}
+.coin-stage{display:flex;justify-content:center;padding:30px 0 10px;perspective:800px}
+.coin{width:170px;height:170px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:18px;font-weight:700;font-size:17px;color:#3a2a00;
+  background:radial-gradient(circle at 35% 30%,#ffe9a8,var(--gold) 55%,#c98f12);
+  box-shadow:0 10px 30px rgba(201,143,18,.35), inset 0 0 0 6px rgba(255,255,255,.25)}
+.coin.spin{animation:flip 1.3s cubic-bezier(.3,.7,.3,1)}
+@keyframes flip{0%{transform:rotateY(0) translateY(0)}50%{transform:rotateY(900deg) translateY(-60px)}100%{transform:rotateY(1800deg) translateY(0)}}
+.center{text-align:center}
+.empty{text-align:center;padding:30px 10px;color:var(--hint)}
+.empty .big{font-size:44px}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:10}
+.sheet .panel{background:var(--bg);width:100%;max-width:560px;margin:0 auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:rgba(20,20,20,.9);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:20}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+(() => {
+  // ---------- Telegram ----------
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const inTG = !!(tg && tg.platform && tg.platform !== 'unknown');
+  if (inTG) {
+    document.documentElement.classList.add('tg');
+    tg.ready();
+    tg.expand();
+  }
+  const ver = v => inTG && tg.isVersionAtLeast && tg.isVersionAtLeast(v);
+  // Opened via the keyboard button in the bot chat -> initData is empty and sendData works
+  const canSendToBot = inTG && !tg.initData;
+
+  const haptic = (kind = 'light') => {
+    try {
+      if (!ver('6.1')) return;
+      if (kind === 'success' || kind === 'warning' || kind === 'error') tg.HapticFeedback.notificationOccurred(kind);
+      else if (kind === 'select') tg.HapticFeedback.selectionChanged();
+      else tg.HapticFeedback.impactOccurred(kind);
+    } catch (e) {}
+  };
+  const say = msg => (ver('6.2') ? new Promise(r => tg.showAlert(msg, r)) : Promise.resolve(alert(msg)));
+  const ask = msg => (ver('6.2') ? new Promise(r => tg.showConfirm(msg, r)) : Promise.resolve(confirm(msg)));
+
+  // ---------- Storage: Telegram CloudStorage -> localStorage -> memory ----------
+  const mem = {};
+  const store = {
+    cloud: ver('6.9'),
+    _cloud(method, ...args) {
+      return new Promise((resolve, reject) => {
+        const t = setTimeout(() => reject(new Error('timeout')), 2000);
+        tg.CloudStorage[method](...args, (err, val) => { clearTimeout(t); err ? reject(err) : resolve(val); });
+      });
+    },
+    async get(k) {
+      if (this.cloud) { try { return (await this._cloud('getItem', k)) || null; } catch (e) { this.cloud = false; } }
+      try { return localStorage.getItem('vzv_' + k); } catch (e) { return mem[k] ?? null; }
+    },
+    async set(k, v) {
+      if (this.cloud) { try { await this._cloud('setItem', k, v); return; } catch (e) { this.cloud = false; } }
+      try { localStorage.setItem('vzv_' + k, v); } catch (e) { mem[k] = v; }
+    },
+    async del(k) {
+      if (this.cloud) { try { await this._cloud('removeItem', k); return; } catch (e) { this.cloud = false; } }
+      try { localStorage.removeItem('vzv_' + k); } catch (e) { delete mem[k]; }
+    }
+  };
+
+  // ---------- Helpers ----------
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const fmtDate = ts => new Date(ts).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  const MAX_OPT = 6, MAX_CRIT = 8;
+  const SUGGEST = ['Деньги', 'Интерес', 'Риск', 'Время', 'Рост', 'Спокойствие', 'Удобство', 'Перспектива'];
+  const WEIGHT_LABEL = ['', 'мелочь', 'немного', 'важно', 'очень', 'критично'];
+
+  // ---------- State ----------
+  let decisions = [];   // list of decisions
+  let view = 'list';    // list | edit | score | result | coin
+  let cur = null;       // the decision being worked on
+  let coin = null;      // coin-flip state
+  const app = document.getElementById('app');
+
+  const blank = () => ({
+    id: uid(), title: '', created: Date.now(), scored: false,
+    options: [{ id: uid(), name: '' }, { id: uid(), name: '' }],
+    criteria: [{ id: uid(), name: '', weight: 3 }],
+    scores: {}, gut: null
+  });
+
+  async function loadAll() {
+    let ids = [];
+    try { ids = JSON.parse((await store.get('idx')) || '[]'); } catch (e) {}
+    const items = await Promise.all(ids.map(async id => { try { return JSON.parse(await store.get('d_' + id)); } catch (e) { return null; } }));
+    decisions = items.filter(Boolean).sort((a, b) => b.created - a.created);
+  }
+  async function saveCur() {
+    const i = decisions.findIndex(d => d.id === cur.id);
+    if (i >= 0) decisions[i] = cur; else decisions.unshift(cur);
+    await store.set('d_' + cur.id, JSON.stringify(cur));
+    await store.set('idx', JSON.stringify(decisions.map(d => d.id)));
+  }
+  async function removeCur() {
+    decisions = decisions.filter(d => d.id !== cur.id);
+    await store.del('d_' + cur.id);
+    await store.set('idx', JSON.stringify(decisions.map(d => d.id)));
+  }
+
+  // ---------- Math ----------
+  const scoreOf = (d, o, c) => (d.scores[o.id] && d.scores[o.id][c.id]) ?? 5;
+  function compute(d) {
+    const wsum = d.criteria.reduce((s, c) => s + c.weight, 0) || 1;
+    return d.options.map(o => {
+      const pts = d.criteria.reduce((s, c) => s + scoreOf(d, o, c) * c.weight, 0);
+      return { o, pct: Math.round(pts / (wsum * 10) * 100) };
+    }).sort((a, b) => b.pct - a.pct);
+  }
+  function explain(d, res) {
+    if (res.length < 2) return '';
+    const [a, b] = res;
+    const diffs = d.criteria.map(c => ({ c, v: (scoreOf(d, a.o, c) - scoreOf(d, b.o, c)) * c.weight }));
+    const plus = diffs.filter(x => x.v > 0).sort((x, y) => y.v - x.v).slice(0, 2).map(x => '«' + esc(x.c.name) + '»');
+    const minus = diffs.filter(x => x.v < 0).sort((x, y) => x.v - y.v).slice(0, 1).map(x => '«' + esc(x.c.name) + '»');
+    let t = '';
+    if (plus.length) t += `<b>${esc(a.o.name)}</b> выигрывает за счёт: ${plus.join(' и ')}.`;
+    if (minus.length) t += ` Уступает в ${minus[0]} — проверь, готов ли ты с этим жить.`;
+    return t;
+  }
+
+  // ---------- Navigation ----------
+  function go(v) {
+    view = v;
+    render();
+    window.scrollTo(0, 0);
+  }
+  if (inTG && ver('6.1')) {
+    tg.BackButton.onClick(() => {
+      haptic();
+      if (view === 'edit') go(cur && cur.scored ? 'result' : 'list');
+      else if (view === 'score') go('edit');
+      else if (view === 'coin') go('result');
+      else go('list');
+    });
+  }
+  function syncBack() {
+    if (!inTG || !ver('6.1')) return;
+    view === 'list' ? tg.BackButton.hide() : tg.BackButton.show();
+  }
+  const backLink = target => inTG ? '' : `<button class="add" data-act="go" data-to="${target}">‹ Назад</button>`;
+
+  // ---------- Views ----------
+  function vList() {
+    const items = decisions.map(d => {
+      let line = '<span class="hint">Не досчитано</span>';
+      if (d.scored) { const r = compute(d); line = `<span class="hint">Побеждает: ${esc(r[0].o.name)} · ${r[0].pct}%</span>`; }
+      return `<button class="card list-item" data-act="open" data-id="${d.id}">
+        <b>${esc(d.title || 'Без названия')}</b>${line}
+        <span class="hint" style="float:right">${fmtDate(d.created)}</span></button>`;
+    }).join('');
+    return `
+      <h1>Взвесь</h1>
+      <p class="sub">Разложи решение по полочкам — и посмотри, чего ты хочешь на самом деле.</p>
+      <button class="btn" data-act="new">+ Новое решение</button>
+      ${decisions.length ? '<h2>Мои решения</h2>' + items : `
+        <div class="empty"><div class="big">⚖️</div>
+        <p>Пока пусто. Начни с того, что крутится в голове:<br>какую машину взять, на какой курс пойти, менять ли работу.</p></div>`}`;
+  }
+
+  function vEdit() {
+    const d = cur;
+    const opts = d.options.map((o, i) => `
+      <div class="row" style="margin-top:${i ? 8 : 0}px">
+        <input type="text" class="grow" placeholder="Вариант ${i + 1}" maxlength="40" value="${esc(o.name)}" data-bind="opt" data-id="${o.id}">
+        ${d.options.length > 2 ? `<button class="icon" data-act="delopt" data-id="${o.id}" aria-label="Удалить">×</button>` : ''}
+      </div>`).join('');
+    const crits = d.criteria.map(c => `
+      <div class="crit">
+        <div class="row">
+          <input type="text" class="grow" placeholder="Например: Деньги" maxlength="30" value="${esc(c.name)}" data-bind="crit" data-id="${c.id}">
+          ${d.criteria.length > 1 ? `<button class="icon" data-act="delcrit" data-id="${c.id}" aria-label="Удалить">×</button>` : ''}
+        </div>
+        <div class="weights">${[1, 2, 3, 4, 5].map(w => `<button class="${c.weight === w ? 'on' : ''}" data-act="weight" data-id="${c.id}" data-w="${w}">${w === c.weight ? WEIGHT_LABEL[w] : w}</button>`).join('')}</div>
+      </div>`).join('');
+    const used = new Set(d.criteria.map(c => c.name.trim().toLowerCase()));
+    const chips = SUGGEST.filter(s => !used.has(s.toLowerCase()));
+    return `
+      ${backLink(d.scored ? 'result' : 'list')}
+      <div class="card"><input type="text" class="title" placeholder="Что решаем?" maxlength="60" value="${esc(d.title)}" data-bind="title"></div>
+      <h2>Варианты</h2>
+      <div class="card">${opts}
+        ${d.options.length < MAX_OPT ? '<button class="add" data-act="addopt">+ Ещё вариант</button>' : ''}</div>
+      <h2>Что для тебя важно</h2>
+      <div class="card">${crits}
+        ${d.criteria.length < MAX_CRIT ? '<button class="add" data-act="addcrit">+ Ещё критерий</button>' : ''}
+        ${chips.length && d.criteria.length < MAX_CRIT ? `<div class="chips">${chips.map(s => `<button class="chip" data-act="chip" data-name="${esc(s)}">${esc(s)}</button>`).join('')}</div>` : ''}
+      </div>
+      <p class="hint">Цифры над критерием — его важность: 1 — мелочь, 5 — без этого никак.</p>
+      <button class="btn" data-act="toscore">Дальше — оценить</button>`;
+  }
+
+  function vScore() {
+    const d = cur;
+    const blocks = d.criteria.map(c => `
+      <div class="card">
+        <div class="row"><b class="grow">${esc(c.name)}</b><span class="badge">важность ${c.weight}</span></div>
+        ${d.options.map(o => {
+          const v = scoreOf(d, o, c);
+          return `<div class="slider">
+            <div class="row"><span class="grow">${esc(o.name)}</span><span class="val" id="v_${o.id}_${c.id}">${v}</span></div>
+            <input type="range" min="1" max="10" step="1" value="${v}" data-bind="score" data-o="${o.id}" data-c="${c.id}">
+          </div>`;
+        }).join('')}
+      </div>`).join('');
+    return `
+      ${backLink('edit')}
+      <h1 style="font-size:22px">${esc(d.title)}</h1>
+      <p class="sub">Сравнивай варианты между собой по каждому пункту. 10 — лучше всего для тебя.
+      Для «Риска» 10 значит «риска почти нет».</p>
+      ${blocks}
+      <button class="btn" data-act="calc">Посчитать</button>`;
+  }
+
+  function vResult() {
+    const d = cur, res = compute(d);
+    const close = res.length > 1 && res[0].pct - res[1].pct < 5;
+    const cards = res.map((r, i) => `
+      <div class="card res ${i === 0 ? 'win' : ''}">
+        <div class="row"><b class="grow">${i === 0 ? '🏆 ' : ''}${esc(r.o.name)}</b><span class="pct">${r.pct}%</span></div>
+        <div class="bar"><i style="width:${r.pct}%"></i></div>
+      </div>`).join('');
+    let gut = '';
+    if (d.gut) {
+      const map = { happy: 'обрадовался', sad: 'расстроился', meh: 'было всё равно' };
+      gut = `<div class="note">🪙 Монетка выпала на «${esc(d.gut.option)}», и ты ${map[d.gut.feeling]}.</div>`;
+    }
+    return `
+      ${backLink('list')}
+      <h1 style="font-size:22px">${esc(d.title)}</h1>
+      <p class="sub">${close ? 'Почти ничья. Таблица тут не решит — спроси интуицию через монетку.' : 'Вот как сложились твои же оценки.'}</p>
+      ${cards}
+      <div class="note">${explain(d, res)}</div>
+      ${gut}
+      <div class="grid2" style="margin-top:12px">
+        <button class="btn ghost" data-act="coin">🪙 Монетка</button>
+        <button class="btn ghost" data-act="sleep">🌙 Переспать</button>
+      </div>
+      <button class="btn ghost" data-act="go" data-to="edit">✏️ Изменить</button>
+      <button class="btn danger" data-act="delete">Удалить решение</button>`;
+  }
+
+  function vCoin() {
+    const top = compute(cur).slice(0, 2).map(r => r.o.name);
+    let body;
+    if (!coin || coin.stage === 'ready') {
+      body = `<p class="sub center">Монетка выберет между «${esc(top[0])}» и «${esc(top[1])}».<br>Не думай — просто заметь, что почувствуешь, когда она упадёт.</p>
+        <div class="coin-stage"><div class="coin" id="coin">?</div></div>
+        <button class="btn" data-act="flip">Подбросить</button>`;
+    } else if (coin.stage === 'landed') {
+      body = `<div class="coin-stage"><div class="coin">${esc(coin.result)}</div></div>
+        <p class="center"><b>Выпало «${esc(coin.result)}».</b><br>Что ты почувствовал в первую секунду?</p>
+        <button class="btn" data-act="gut" data-f="happy">😊 Обрадовался</button>
+        <button class="btn ghost" data-act="gut" data-f="sad">😕 Расстроился</button>
+        <button class="btn ghost" data-act="gut" data-f="meh">😐 Всё равно</button>`;
+    } else {
+      const other = top.find(t => t !== coin.result);
+      const msg = {
+        happy: `Похоже, ты на самом деле хочешь «${esc(coin.result)}». Сравни с таблицей: совпало?`,
+        sad: `Похоже, тебя тянет к «${esc(other)}». Если таблица говорит другое — возможно, ты недооценил какой-то критерий.`,
+        meh: 'Значит, оба варианта для тебя нормальные. Бери тот, что выиграл по таблице, и не мучайся.'
+      }[coin.feeling];
+      body = `<div class="coin-stage"><div class="coin">${esc(coin.result)}</div></div>
+        <div class="note">${msg}</div>
+        <button class="btn" data-act="go" data-to="result">К результату</button>`;
+    }
+    return `${backLink('result')}<h1 style="font-size:22px">Спроси интуицию</h1>${body}`;
+  }
+
+  function render() {
+    syncBack();
+    app.innerHTML = { list: vList, edit: vEdit, score: vScore, result: vResult, coin: vCoin }[view]();
+  }
+
+  function toast(text) {
+    const el = document.createElement('div');
+    el.className = 'toast'; el.textContent = text;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2200);
+  }
+
+  // ---------- Reminder sheet ----------
+  function openSleepSheet() {
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    sheet.innerHTML = `<div class="panel">
+      <b style="font-size:18px">Когда спросить снова?</b>
+      <p class="hint">Бот напишет тебе и спросит, согласен ли ты всё ещё с выбором. Если нет — решение было на эмоциях.</p>
+      <button class="btn" data-m="1440">Завтра</button>
+      <button class="btn ghost" data-m="4320">Через 3 дня</button>
+      <button class="btn ghost" data-m="10080">Через неделю</button>
+      <button class="btn ghost" data-m="1">Через минуту (проверить)</button>
+      <button class="btn danger" data-m="0">Отмена</button></div>`;
+    document.body.appendChild(sheet);
+    sheet.addEventListener('click', async e => {
+      const b = e.target.closest('button');
+      if (!b && e.target !== sheet) return;
+      sheet.remove();
+      const m = b ? +b.dataset.m : 0;
+      if (!m) return;
+      await sendReminder(m);
+    });
+  }
+
+  async function sendReminder(minutes) {
+    const res = compute(cur);
+    if (!canSendToBot) {
+      await say(inTG
+        ? 'Чтобы бот смог напомнить, открой приложение кнопкой «🧭 Мои решения» внизу чата с ботом (а не через меню или ссылку).'
+        : 'Напоминания работают внутри Telegram. Открой приложение через бота кнопкой «🧭 Мои решения».');
+      return;
+    }
+    cur.remindMinutes = minutes;
+    await saveCur();
+    haptic('success');
+    tg.sendData(JSON.stringify({
+      v: 1, type: 'remind', minutes,
+      title: cur.title.slice(0, 60), winner: res[0].o.name.slice(0, 40), score: res[0].pct
+    }));
+    // Telegram closes the Mini App after sendData
+  }
+
+  // ---------- Events ----------
+  app.addEventListener('input', e => {
+    const el = e.target, b = el.dataset.bind;
+    if (!b || !cur) return;
+    if (b === 'title') cur.title = el.value;
+    if (b === 'opt') cur.options.find(o => o.id === el.dataset.id).name = el.value;
+    if (b === 'crit') cur.criteria.find(c => c.id === el.dataset.id).name = el.value;
+    if (b === 'score') {
+      const { o, c } = el.dataset;
+      (cur.scores[o] = cur.scores[o] || {})[c] = +el.value;
+      document.getElementById(`v_${o}_${c}`).textContent = el.value;
+      haptic('select');
+    }
+  });
+
+  app.addEventListener('click', async e => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act, id = b.dataset.id;
+    haptic();
+    switch (act) {
+      case 'go': go(b.dataset.to); break;
+      case 'new': cur = blank(); go('edit'); setTimeout(() => app.querySelector('.title')?.focus(), 50); break;
+      case 'open':
+        cur = JSON.parse(JSON.stringify(decisions.find(d => d.id === id)));
+        go(cur.scored ? 'result' : 'edit'); break;
+      case 'addopt': cur.options.push({ id: uid(), name: '' }); render(); break;
+      case 'delopt': cur.options = cur.options.filter(o => o.id !== id); delete cur.scores[id]; render(); break;
+      case 'addcrit': cur.criteria.push({ id: uid(), name: '', weight: 3 }); render(); break;
+      case 'chip': {
+        const empty = cur.criteria.find(c => !c.name.trim());
+        if (empty) empty.name = b.dataset.name; else cur.criteria.push({ id: uid(), name: b.dataset.name, weight: 3 });
+        render(); break;
+      }
+      case 'delcrit':
+        cur.criteria = cur.criteria.filter(c => c.id !== id);
+        Object.values(cur.scores).forEach(s => delete s[id]); render(); break;
+      case 'weight': cur.criteria.find(c => c.id === id).weight = +b.dataset.w; render(); break;
+      case 'toscore': {
+        cur.title = cur.title.trim();
+        cur.options = cur.options.filter(o => o.name.trim());
+        cur.criteria = cur.criteria.filter(c => c.name.trim());
+        if (!cur.title) { await say('Напиши, что решаем.'); render(); break; }
+        if (cur.options.length < 2) { while (cur.options.length < 2) cur.options.push({ id: uid(), name: '' }); await say('Нужно хотя бы два варианта.'); render(); break; }
+        if (!cur.criteria.length) { cur.criteria.push({ id: uid(), name: '', weight: 3 }); await say('Добавь хотя бы один критерий — что для тебя важно.'); render(); break; }
+        await saveCur(); go('score'); break;
+      }
+      case 'calc': cur.scored = true; await saveCur(); haptic('success'); go('result'); break;
+      case 'coin': coin = { stage: 'ready' }; go('coin'); break;
+      case 'flip': {
+        const top = compute(cur).slice(0, 2).map(r => r.o.name);
+        const el = document.getElementById('coin');
+        b.disabled = true;
+        el.classList.add('spin');
+        setTimeout(() => haptic('medium'), 650);
+        setTimeout(() => { coin = { stage: 'landed', result: top[Math.random() < .5 ? 0 : 1] }; haptic('heavy'); render(); }, 1300);
+        break;
+      }
+      case 'gut':
+        coin.stage = 'done'; coin.feeling = b.dataset.f;
+        cur.gut = { option: coin.result, feeling: coin.feeling };
+        await saveCur(); render(); break;
+      case 'sleep': openSleepSheet(); break;
+      case 'delete':
+        if (await ask('Удалить это решение?')) { await removeCur(); toast('Удалено'); go('list'); }
+        break;
+    }
+  });
+
+  // ---------- Start ----------
+  app.innerHTML = '<p class="hint center" style="padding-top:40px">Загрузка…</p>';
+  loadAll().then(render);
+})();
+</script>
+</body>
+</html>
